@@ -5,33 +5,6 @@ import math
 import msvcrt
 
 """
-set up a blank screen, x by y of ' '
-randomly pick a spot on the bottom,
-shoot a firework up
-it explodes
-firework and the explosions are represented by characters
-for starters the firework can be an 'O'
-and the explosions can be '~'
-
-originally was thinking parabolas, and that was getting copmlicated
-and then DUH, i should just use classical physics, its so simple. 
-have a starting velocity and angle, get the Vx and Vy from that, and just solve for new position each call
-each firework will be a firework object, that draws to the screen,
-so there can be more than one at a time
-and you can set the amount of them
-and maybe it fluctuates
-
-lets use ARGS and command line options
---size small/medium/big
---height 
---width
-eventually
-
-actually scratch that
-I want there to be a calibration at the start
-you can cycle through different rectangles
-and when it fits your screen you press enter
-and it starts
 so there will be a splash screen that says Hanabi with a rectangle around edges
 and instructions "A: smaller" "D: bigger" "Press Enter"
 or dude just do WASD so you can do height and width also, for different dimension screens
@@ -41,6 +14,52 @@ and after X updates it rolls to see if it goes into another non-finale stretch o
 and repeat
 so itll go in and out of finalle mode randomly
 """
+
+def run():
+	size_setter = Screen(50, 20, '#')
+
+	done = False
+	while not done:
+		clear_screen()
+		size_setter.print()
+		print('Hanabi')
+		print('use WASD to change size of rectangle to fit your screen, then press Enter')
+		user_input = msvcrt.getwch()
+		if user_input == 'w' or input == 'W':
+			size_setter = Screen(size_setter.width, size_setter.height - 5, size_setter.background)
+						
+		if user_input == 'a' or input == 'A':
+			size_setter = Screen(size_setter.width - 5, size_setter.height, size_setter.background)
+
+		if user_input == 's' or input == 'S':
+			size_setter = Screen(size_setter.width, size_setter.height + 5, size_setter.background)
+			
+		if user_input == 'd' or input == 'D':
+			size_setter = Screen(size_setter.width + 5, size_setter.height, size_setter.background)
+			
+		if user_input == '\r' or input == 'e' or input == 'E':
+			done = True
+
+
+	run_screen = Screen(size_setter.width, size_setter.height)
+	h = Composer(run_screen)
+
+	run_time = input('How many hours?  Hours: ')
+	run_time = int(run_time)  * 60 * 60 * 20
+
+	for _ in range(run_time):
+		if random.random() < 0.1:
+			firework = Firework(Coord(round(random.random() * 300 + 25), 0), random.random()*3+2, random.random()*90+45, random.random()*30+10, '@', 'o')
+			h.add_firework(firework)
+		h.write_fireworks()
+		clear_screen()
+		h.print_screen()
+		h.update_fireworks()
+		wait_sec(0.05)
+
+
+	clear_screen()
+	print('See ya next year!')
 
 class Composer:
 	"""
@@ -132,36 +151,12 @@ class Screen:
 
 class Firework:
 	"""
-	A firework that goes across the screen and either explodes into more fireworks, or terminates after reaching it's length or the end of the screen
-	OR maybe just give them all lengths, and only have them update the screen if they would be ON the screen
-	I like that more because then they can pop off screen but you'd see the result
-	Will have a attribute that tells it how many more recursive calls are left,
-	so you launch a firework, which splits into a bunch of other fireworks, and so on
-	maybe each recursive call the LENGTH is halved
-
 	can have 3 different kind of fireworks
 	a standard that only recursively calls once
 	a double that calls twice
 	and a rando, where everything is random. can go nuts with this one. like maybe even only some of the offspring will have offspring, etc, and lengths can be rando
 
-	a FIREWORK has:
-	 a POSITION coordinate
-	 a list of it's flame trails FLAME. stores 3 values and overwrites as adds more. can do self.time % 3
-	 a TIMER, telling how long it will travel before popping
-	 a V0, initial velocity
-	 an ANGLE, degrees or radians?
-	 a character to display flame, FLAME_CHAR
-	 a character to display dim streak, DIM_CHAR
-	 a FLAME_LENGTH which is length of flame trail, before turning dim
-	 an attribute that tells it whether or not to split, SPLIT
-
-	a FIREWORK can:
-	fly through the air
-	Pop
-
-	*** eventually add a dead trail, like as it fades. so maybe flame is '*' or 'O' but then dead is 'o' or '.'
-	this will replace flames that are X old with dead flames, 
-	ALSO make it so when the time runs out it doesn't remove itself yet, instead it stops updating position but keeps
+	MAYBE make it so when the time runs out it doesn't remove itself yet, instead it stops updating position but keeps
 	making things dead, and then after that it removes itself. so there's a lag. for now skip this.
 	you can just compare FADE to TIME to see what you should fade, and then write that, etc.
 	"""
@@ -185,7 +180,7 @@ class Firework:
 
 	def fly(self, composer):
 		"""
-		using projectile motion, update position and add it to FLAME
+		using projectile motion, update position and add it to TRAIL
 		"""
 		if self.time < self.timer:
 			# print('position: ', self.position)
@@ -207,17 +202,13 @@ class Firework:
 
 	def pop(self, composer):
 		"""
-		make more fireworks if split > 0, and delete self from wherever the list of all fireworks is stored
-
-		consider saving the streaks later, but for now lets try without.
+		firework pops, making new fireworks from it's position if spliy > 0
+		firework removes itself from composer
 		"""
 		if self.split > 0:
 			for firework in range(round(random.random()*50+50)):
 				composer.add_firework(Firework(self.position.copy(), random.random()*5, random.random()*360, random.random()*15, '*', '.', 3, self.split - 1))
 		composer.remove_firework(self)
-
-
-
 
 class Coord:
 	"""
@@ -250,45 +241,4 @@ def clear_screen():
 	"""
 	os.system('cls')
 
-
-test_screen = Screen(50, 20, '#')
-done = False
-while not done:
-	clear_screen()
-	test_screen.print()
-	user_input = msvcrt.getwch()
-	if user_input == 'w' or input == 'W':
-		test_screen = Screen(test_screen.width, test_screen.height + 5, test_screen.background)
-					
-	if user_input == 'a' or input == 'A':
-		test_screen = Screen(test_screen.width - 5, test_screen.height, test_screen.background)
-
-	if user_input == 's' or input == 'S':
-		test_screen = Screen(test_screen.width, test_screen.height - 5, test_screen.background)
-		
-	if user_input == 'd' or input == 'D':
-		test_screen = Screen(test_screen.width + 5, test_screen.height, test_screen.background)
-		
-	if user_input == '\r' or input == 'e' or input == 'E':
-		done = True
-
-
-# sc = Screen(300, 65)
-sc = Screen(test_screen.width, test_screen.height)
-h = Composer(sc)
-# f = Firework(Coord(20,0), 3, 65, 35, '*', '.')
-# h.add_firework(f)
-
-for _ in range(70000):
-	if random.random() < 0.1:
-		firework = Firework(Coord(round(random.random() * 300 + 25), 0), random.random()*3+2, random.random()*90+45, random.random()*30+10, '@', 'o')
-		h.add_firework(firework)
-	h.write_fireworks()
-	clear_screen()
-	h.print_screen()
-	h.update_fireworks()
-	wait_sec(0.1)
-
-
-clear_screen()
-print('See ya next year!')
+run()
