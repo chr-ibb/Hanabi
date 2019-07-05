@@ -65,17 +65,23 @@ class Composer:
 	def add_firework(self, firework):
 		self.fireworks.append(firework)
 	def remove_firework(self, firework):
-		for smoke in firework.trail:
-			self.screen.set_char(smoke.int_copy(), ' ')
+		for spot in firework.trail:
+			int_spot = spot.int_copy()
+			if self.screen.in_screen(int_spot):
+				self.screen.set_char(int_spot, self.screen.background)
 		self.fireworks.remove(firework)
 	def update_fireworks(self):
 		for firework in self.fireworks:
 			firework.fly(self)
 	def write_fireworks(self):
 		for firework in self.fireworks:
-			self.screen.set_char(firework.position.int_copy(), firework.flame_char)
+			int_position = firework.position.int_copy()
+			if self.screen.in_screen(int_position):
+				self.screen.set_char(int_position, firework.flame_char)
 			if firework.dim:
-				self.screen.set_char(firework.dim.int_copy(), firework.dim_char)
+				int_dim = firework.dim.int_copy()
+				if self.screen.in_screen(int_dim):
+					self.screen.set_char(int_dim, firework.dim_char)
 
 	def print_screen(self):
 		self.screen.print()
@@ -86,12 +92,13 @@ class Screen:
 	A screen of characters WIDTH wide and HEIGHT high. Characters stored in 2d list CONTENT. Can change individual characters based on coordinates, and print the screen
 	"""
 
-	def __init__(self, width, height):
+	def __init__(self, width, height, background = ' '):
 		self.width = width
 		self.x_max = self.width - 1
 		self.height = height
 		self.y_max = height - 1
-		self.content = [[' ' for _ in range(width)] for _ in range(height)]
+		self.background = background
+		self.content = [[self.background for _ in range(width)] for _ in range(height)]
 
 	def set_char(self, coord, char):
 		"""
@@ -205,7 +212,8 @@ class Firework:
 		consider saving the streaks later, but for now lets try without.
 		"""
 		if self.split > 0:
-			print('pop')
+			for firework in range(round(random.random()*50+50)):
+				composer.add_firework(Firework(self.position.copy(), random.random()*5, random.random()*360, random.random()*15, '*', '.', 3, self.split - 1))
 		composer.remove_firework(self)
 
 
@@ -242,14 +250,45 @@ def clear_screen():
 	"""
 	os.system('cls')
 
-sc = Screen(200, 50)
-h = Composer(sc)
-f = Firework(Coord(20,0), 3, 65, 35, 'O', '.')
-h.add_firework(f)
 
-while h.fireworks:
+test_screen = Screen(50, 20, '#')
+done = False
+while not done:
+	clear_screen()
+	test_screen.print()
+	user_input = msvcrt.getwch()
+	if user_input == 'w' or input == 'W':
+		test_screen = Screen(test_screen.width, test_screen.height + 5, test_screen.background)
+					
+	if user_input == 'a' or input == 'A':
+		test_screen = Screen(test_screen.width - 5, test_screen.height, test_screen.background)
+
+	if user_input == 's' or input == 'S':
+		test_screen = Screen(test_screen.width, test_screen.height - 5, test_screen.background)
+		
+	if user_input == 'd' or input == 'D':
+		test_screen = Screen(test_screen.width + 5, test_screen.height, test_screen.background)
+		
+	if user_input == '\r' or input == 'e' or input == 'E':
+		done = True
+
+
+# sc = Screen(300, 65)
+sc = Screen(test_screen.width, test_screen.height)
+h = Composer(sc)
+# f = Firework(Coord(20,0), 3, 65, 35, '*', '.')
+# h.add_firework(f)
+
+for _ in range(70000):
+	if random.random() < 0.1:
+		firework = Firework(Coord(round(random.random() * 300 + 25), 0), random.random()*3+2, random.random()*90+45, random.random()*30+10, '@', 'o')
+		h.add_firework(firework)
 	h.write_fireworks()
 	clear_screen()
 	h.print_screen()
 	h.update_fireworks()
 	wait_sec(0.1)
+
+
+clear_screen()
+print('See ya next year!')
