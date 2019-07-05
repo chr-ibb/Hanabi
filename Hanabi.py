@@ -11,10 +11,9 @@ firework and the explosions are represented by characters
 for starters the firework can be an 'O'
 and the explosions can be '~'
 
-should i use parabolas?
-probably
-probably everything should be a parabola
-so really i just need to write something that can draw a parabola from one end to the other
+originally was thinking parabolas, and that was getting copmlicated
+and then DUH, i should just use classical physics, its so simple. 
+have a starting velocity and angle, get the Vx and Vy from that, and just solve for new position each call
 each firework will be a firework object, that draws to the screen,
 so there can be more than one at a time
 and you can set the amount of them
@@ -33,12 +32,50 @@ and when it fits your screen you press enter
 and it starts
 so there will be a splash screen that says Hanabi with a rectangle around edges
 and instructions "A: smaller" "D: bigger" "Press Enter"
+or dude just do WASD so you can do height and width also, for different dimension screens
 
 I'll find a nice rate of fireworks for non-finale time
 and after X updates it rolls to see if it goes into another non-finale stretch or into a finale
 and repeat
 so itll go in and out of finalle mode randomly
 """
+
+class Composer:
+	"""
+	stores all the fireworks, adds them, removes them, puts them on a screen, and prints that screen
+
+	has:
+	list of fireworks
+	a screen
+
+	can:
+	update fireworks
+	add fireworks
+	remove fireworks
+	write firework content to screen
+	print screen
+	"""
+
+	def __init__(self, screen):
+		self.screen = screen
+		self.fireworks = []
+
+	def add_firework(self, firework):
+		self.fireworks.append(firework)
+	def remove_firework(self, firework):
+		self.fireworks.remove(firework)
+	def update_fireworks(self):
+		for firework in self.fireworks:
+			firework.fly()
+	def write_fireworks(self):
+		for firework in self.fireworks:
+			for spot in firework.flame:
+				if spot.x < self.screen.width and spot.y < self.screen.height:
+					self.screen.set_char(spot, firework.char)
+
+	def print_screen(self):
+		self.screen.print()
+
 
 class Screen:
 	"""
@@ -91,35 +128,60 @@ class Firework:
 	and a rando, where everything is random. can go nuts with this one. like maybe even only some of the offspring will have offspring, etc, and lengths can be rando
 
 	a FIREWORK has:
-	 a starting coordinate START
-	 a list of it's flame trails FLAME
-	 a LENGTH, telling how far it will travel before popping
-	 an ANGLE, which is really the a value for ax^2 + bx + c
-	 a LEFT_OR_RIGHT, which tells whether it launches towards the left or right (using parabolas, so have to know which direction we are going)
-	 an attribute that tells it whether or not ot make more, MORE
+	 a POSITION coordinate
+	 a list of it's flame trails FLAME. stores 3 values and overwrites as adds more. can do self.time % 3
+	 a TIMER, telling how long it will travel before popping
+	 a V0, initial velocity
+	 an ANGLE, degrees or radians?
+	 a character to display, CHAR
+	 a STREAK_LENGTH which is length of flame trail
+	 an attribute that tells it whether or not to split, SPLIT
 
 	a FIREWORK can:
 	fly through the air
 	Pop
 	"""
+	grav = -10
 
-	def __init__(self, start, length, angle, left_or_right = 'right', more = 1):
-		self.start = start
-		self.flame = []
-		self.length = length
+	def __init__(self, position, timer, v0, angle, char, composer, streak_length = 3, split = 1):
+		self.position = position
+		self.timer = timer
+		self.v0 = v0
 		self.angle = angle
-		self.left_or_right = left_or_right
-		self.more = more 
+		self.char = char
+		self.composer = composer # the class that stores the fireworks and the screen
+		self.streak_length = streak_length
+		self.split = split
+
+		self.flame = [self.position.copy() for _ in range(streak_length)]
+		self.time = 0
+		self.vx = math.cos(self.angle) / self.v0
+		self.vy = math.sin(self.angle) / self.v0
 
 	def fly(self):
 		"""
-		use y = a(x-h)^2 + k where a is the 'slope' more or less, h is the x-value of vertex, and k is y-value of vertex
+		using projectile motion, update position and add it to FLAME
 		"""
-		if left_or_right = 'right':
-			#you have the left x-intercept and the 'skew', so solve for the equation
-			# i need paper
+		if self.time < self.timer:
+			self.position.x = self.position.x + self.vx
+			self.position.y = self.position.y + self.vy
+			
+			self.flame[time % streak_length] = self.position.copy()
+
+			self.vy = self.vy + self.grav
+			self.time += 1
+		else:
+			self.pop()
 
 	def pop(self):
+		"""
+		make more fireworks if split > 0, and delete self from wherever the list of all fireworks is stored
+
+		consider saving the streaks later, but for now lets try without.
+		"""
+		if self.split > 0:
+
+		composer.remove_firework(self)
 
 
 
@@ -132,3 +194,7 @@ class Coord:
 	def __init__(self, x,y):
 		self.x = x
 		self.y = y
+
+	def copy(self):
+		return Coord(self.x, self.y)
+
