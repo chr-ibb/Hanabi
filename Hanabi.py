@@ -16,7 +16,7 @@ so itll go in and out of finalle mode randomly
 """
 
 def run():
-	size_setter = Screen(50, 20, '#')
+	size_setter = make_splash(50, 20)
 
 	done = False
 	while not done:
@@ -26,16 +26,16 @@ def run():
 		print('use WASD to change size of rectangle to fit your screen, then press Enter')
 		user_input = msvcrt.getwch()
 		if user_input == 'w' or input == 'W':
-			size_setter = Screen(size_setter.width, size_setter.height - 5, size_setter.background)
+			size_setter = make_splash(size_setter.width, size_setter.height - 5)
 						
 		if user_input == 'a' or input == 'A':
-			size_setter = Screen(size_setter.width - 5, size_setter.height, size_setter.background)
+			size_setter = make_splash(size_setter.width - 5, size_setter.height)
 
 		if user_input == 's' or input == 'S':
-			size_setter = Screen(size_setter.width, size_setter.height + 5, size_setter.background)
+			size_setter = make_splash(size_setter.width, size_setter.height + 5)
 			
 		if user_input == 'd' or input == 'D':
-			size_setter = Screen(size_setter.width + 5, size_setter.height, size_setter.background)
+			size_setter = make_splash(size_setter.width + 5, size_setter.height)
 			
 		if user_input == '\r' or input == 'e' or input == 'E':
 			done = True
@@ -44,8 +44,8 @@ def run():
 	run_screen = Screen(size_setter.width, size_setter.height)
 	h = Composer(run_screen)
 
-	run_time = input('How many hours?  Hours: ')
-	run_time = int(run_time)  * 60 * 60 * 20
+	run_time = input('How many minutes?  Minutes: ')
+	run_time = int(run_time)  * 60 * 20
 
 	for _ in range(run_time):
 		if random.random() < 0.1:
@@ -61,20 +61,25 @@ def run():
 	clear_screen()
 	print('See ya next year!')
 
+title_char = '#'
+p = title_char
+# To spell out Hanabi:
+hanabi1 = ' '*3 + p + ' '*3 + p + ' '*22 + p + ' '*7
+hanabi2 = hanabi1
+hanabi3 = hanabi1
+hanabi4 = ' '*2 + p + ' '*3 + ' '*22 + p + ' '*6 + p + ' '
+hanabi5 = ' '*2 + p*5 + ' '*3 + p*2 + ' '*4 + p + ' '*6 + p*2 + ' '*4 + p + ' '*8
+hanabi6 = ' '*2 + p + ' '*3 + p + ' '*2 + p + ' '*2 + p + ' '*3 + p*4 + ' '*2 + p + ' '*2 + p + ' '*3 + p*4 + ' '*2 + p + ' '*2
+hanabi7 = ' ' + p + ' '*3 + p + ' '*2 + p + ' '*3 + p + ' '*3 + p + ' '*2 + p + ' ' + p + ' '*3 + p + ' '*2 + p + ' '*3 + p + ' '*2 + p + ' '*2
+hanabi8 = ' ' + p + ' '*3 + p + ' '*2 + p + ' '*2 + p + ' ' + p + ' ' + p + ' '*2 + p + ' '*2 + p + ' '*2  + p + ' ' + p + ' ' + p + ' '*2 + p + ' '*2 + P + ' '*3
+hanabi9 = ' ' + p + ' '*3 + p + ' '*3 + p*2 + ' '*2 + p + ' ' + p + ' '*2 + p + ' '*3 + p*2 + ' '*2 + p + ' ' + p*4 + ' '*2 + p + ' '*3
+def make_splash(width, height):
+	splash = Screen(width, height)
+	splash.set_char(Coord())
+
 class Composer:
 	"""
-	stores all the fireworks, adds them, removes them, puts them on a screen, and prints that screen
-
-	has:
-	list of fireworks
-	a screen
-
-	can:
-	update fireworks
-	add fireworks
-	remove fireworks
-	write firework content to screen
-	print screen
+	Stores all the fireworks, adds them, removes them, puts them on a screen, and prints that screen
 	"""
 
 	def __init__(self, screen):
@@ -202,7 +207,7 @@ class Firework:
 
 	def pop(self, composer):
 		"""
-		firework pops, making new fireworks from it's position if spliy > 0
+		firework pops, making new fireworks from it's position if split > 0
 		firework removes itself from composer
 		"""
 		if self.split > 0:
@@ -215,7 +220,7 @@ class Coord:
 	simple coordinate with an X and Y value
 	"""
 
-	def __init__(self, x,y):
+	def __init__(self, x, y):
 		self.x = x
 		self.y = y
 
