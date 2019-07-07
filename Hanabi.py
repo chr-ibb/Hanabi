@@ -5,39 +5,36 @@ import math
 import msvcrt
 
 """
-so there will be a splash screen that says Hanabi with a rectangle around edges
-and instructions "A: smaller" "D: bigger" "Press Enter"
-or dude just do WASD so you can do height and width also, for different dimension screens
-
 I'll find a nice rate of fireworks for non-finale time
 and after X updates it rolls to see if it goes into another non-finale stretch or into a finale
 and repeat
-so itll go in and out of finalle mode randomly
+so itll go in and out of finale mode randomly
 """
 
 def run():
-	size_setter = make_splash(50, 20)
-
+	# size_setter = make_splash(50, 20)
+	size_setter = make_splash(315, 80)
 	done = False
 	while not done:
 		clear_screen()
 		size_setter.print()
-		print('Hanabi')
-		print('use WASD to change size of rectangle to fit your screen, then press Enter')
+		print('Use WASD to change size of the rectangle to fit your screen, then press Enter. Bigger is better- try fullscreen!')
+		print('                  (make sure you can still see the top edge of the rectangle)')
+		print('Size: ', size_setter.width, ' x ', size_setter.height)
 		user_input = msvcrt.getwch()
-		if user_input == 'w' or input == 'W':
+		if user_input == 'w' or user_input == 'W':
 			size_setter = make_splash(size_setter.width, size_setter.height - 5)
 						
-		if user_input == 'a' or input == 'A':
+		if user_input == 'a' or user_input == 'A':
 			size_setter = make_splash(size_setter.width - 5, size_setter.height)
 
-		if user_input == 's' or input == 'S':
+		if user_input == 's' or user_input == 'S':
 			size_setter = make_splash(size_setter.width, size_setter.height + 5)
 			
-		if user_input == 'd' or input == 'D':
+		if user_input == 'd' or user_input == 'D':
 			size_setter = make_splash(size_setter.width + 5, size_setter.height)
 			
-		if user_input == '\r' or input == 'e' or input == 'E':
+		if user_input == '\r' or user_input == 'e' or input == 'E':
 			done = True
 
 
@@ -45,37 +42,97 @@ def run():
 	h = Composer(run_screen)
 
 	run_time = input('How many minutes?  Minutes: ')
-	run_time = int(run_time)  * 60 * 20
+	run_time = round(float(run_time) * 60 * 20)
 
-	for _ in range(run_time):
-		if random.random() < 0.1:
-			firework = Firework(Coord(round(random.random() * 300 + 25), 0), random.random()*3+2, random.random()*90+45, random.random()*30+10, '@', 'o')
-			h.add_firework(firework)
+	finale = False
+	finale_frame = 0
+	default_rate = 0.1
+	firework_rate = default_rate
+	for frame in range(run_time):
+		# Randomly shoot fireworks, 10% chance every frame. dont shoot if its currently a finale
+		if random.random() < firework_rate:
+			position = Coord(round(random.random() * run_screen.width), 0)
+			v0 = random.random()*3+2
+			angle = random.random()*90+45
+			timer = random.random()*30+10
+			h.add_firework(Firework(position, v0, angle, timer, '@', 'o'))
+
+		if frame and frame % 200 == 0 and random.random() < 1:
+			finale = True
+			finale_frame = frame
+			firework_rate = 0
+		if finale and frame == finale_frame + 50:
+			firework_rate = do_finale(h)
+		if frame == finale_frame + 100:
+			finale = False
+			firework_rate = default_rate
+
+
+		if frame > run_time - 400:
+			firework_rate = 1
+
 		h.write_fireworks()
 		clear_screen()
 		h.print_screen()
+		print("frame: ", frame)
+		print("number of fireworks: ", len(h.fireworks))
 		h.update_fireworks()
 		wait_sec(0.05)
 
+	print('The fireworks are over! See ya ~')
 
-	clear_screen()
-	print('See ya next year!')
+def do_finale(composer):
+	"""
+	make it so it randomly desides what KIND of finale. maybe it just returns 1 and thats it, so the rate goes up to 1 and it goes nuts,
+	maybe it does whats below,
+	maybe it shoots half from each side towards the middle
+	those could be the three for now.
+	"""
+	screen = composer.screen
 
-title_char = '#'
-p = title_char
-# To spell out Hanabi:
-hanabi1 = ' '*3 + p + ' '*3 + p + ' '*22 + p + ' '*7
-hanabi2 = hanabi1
-hanabi3 = hanabi1
-hanabi4 = ' '*2 + p + ' '*3 + ' '*22 + p + ' '*6 + p + ' '
-hanabi5 = ' '*2 + p*5 + ' '*3 + p*2 + ' '*4 + p + ' '*6 + p*2 + ' '*4 + p + ' '*8
-hanabi6 = ' '*2 + p + ' '*3 + p + ' '*2 + p + ' '*2 + p + ' '*3 + p*4 + ' '*2 + p + ' '*2 + p + ' '*3 + p*4 + ' '*2 + p + ' '*2
-hanabi7 = ' ' + p + ' '*3 + p + ' '*2 + p + ' '*3 + p + ' '*3 + p + ' '*2 + p + ' ' + p + ' '*3 + p + ' '*2 + p + ' '*3 + p + ' '*2 + p + ' '*2
-hanabi8 = ' ' + p + ' '*3 + p + ' '*2 + p + ' '*2 + p + ' ' + p + ' ' + p + ' '*2 + p + ' '*2 + p + ' '*2  + p + ' ' + p + ' ' + p + ' '*2 + p + ' '*2 + P + ' '*3
-hanabi9 = ' ' + p + ' '*3 + p + ' '*3 + p*2 + ' '*2 + p + ' ' + p + ' '*2 + p + ' '*3 + p*2 + ' '*2 + p + ' ' + p*4 + ' '*2 + p + ' '*3
-def make_splash(width, height):
-	splash = Screen(width, height)
-	splash.set_char(Coord())
+	choose = random.random()*4
+	choose = 2.5 #REMOVE THIS
+	if choose < 1:
+		position = Coord((screen.width / 4) + random.random()*screen.width/2, 0)
+		timer = random.random()*30+10
+		f_angle = random.random()*90+45
+		number_of_fireworks = round(10 + random.random()*40)
+		for _ in range(number_of_fireworks):
+			v0 = random.random()*3+2
+			angle = f_angle - 45 + random.random()*90
+			composer.add_firework(Firework(position.copy(), v0, angle, timer, '@', 'o'))
+		return 0
+
+	elif choose < 2:
+		number_of_fireworks = round(5 + random.random()*20)
+		timer = random.random()*30+10
+
+		position = Coord(screen.width * 0.15, 0)
+		f_angle = 45
+		for _ in range(number_of_fireworks):
+			v0 = random.random()*3+3
+			angle = f_angle - 25 + random.random()*50
+			composer.add_firework(Firework(position.copy(), v0, angle, timer, '@', 'o'))
+
+		position = Coord(screen.width * 0.85, 0)
+		f_angle = 135
+		for _ in range(number_of_fireworks):
+			v0 = random.random()*3+3
+			angle = f_angle - 25 + random.random()*50
+			composer.add_firework(Firework(position.copy(), v0, angle, timer, '@', 'o'))
+		return 0
+
+	elif choose < 3:
+		position = Coord((screen.width / 4) + random.random()*screen.width/2, 0)
+		timer = random.random()*30+10
+		angle = random.random()*90+45
+		v0 = random.random()*3+2
+		composer.add_firework(Firework(position.copy(), v0, angle, timer, '+', '-', round(timer / 2), 2))
+		return 0
+
+	else:
+		return 1
+
 
 class Composer:
 	"""
@@ -210,10 +267,14 @@ class Firework:
 		firework pops, making new fireworks from it's position if split > 0
 		firework removes itself from composer
 		"""
-		if self.split > 0:
+		if self.split > 1:
+			for firework in range(round(random.random()*75+75)):
+				composer.add_firework(Firework(self.position.copy(), random.random()*5, random.random()*360, 20, '#', '~', 10, self.split - 1))
+		elif self.split > 0:
 			for firework in range(round(random.random()*50+50)):
 				composer.add_firework(Firework(self.position.copy(), random.random()*5, random.random()*360, random.random()*15, '*', '.', 3, self.split - 1))
 		composer.remove_firework(self)
+
 
 class Coord:
 	"""
@@ -234,6 +295,45 @@ class Coord:
 		return '(' + str(self.x) + ', ' + str(self.y) +')'
 
 
+# To spell out Hanabi:
+title_char = '#'
+p = title_char
+hanabi_letters = []
+hanabi_letters.append(list(' '*3 + p + ' '*3 + p + ' '*22 + p + ' '*7))
+hanabi_letters.append(list(' '*3 + p + ' '*3 + p + ' '*22 + p + ' '*7))
+hanabi_letters.append(list(' '*3 + p + ' '*3 + p + ' '*22 + p + ' '*7))
+hanabi_letters.append(list(' '*2 + p + ' '*3 + p + ' '*22 + p + ' '*6 + p + ' '))
+hanabi_letters.append(list(' '*2 + p*5 + ' '*3 + p*2 + ' '*4 + p + ' '*6 + p*2 + ' '*4 + p + ' '*8))
+hanabi_letters.append(list(' '*2 + p + ' '*3 + p + ' '*2 + p + ' '*2 + p + ' '*3 + p*4 + ' '*2 + p + ' '*2 + p + ' '*3 + p*4 + ' '*2 + p + ' '*2))
+hanabi_letters.append(list(' ' + p + ' '*3 + p + ' '*2 + p + ' '*3 + p + ' '*3 + p + ' '*2 + p + ' ' + p + ' '*3 + p + ' '*2 + p + ' '*3 + p + ' '*2 + p + ' '*2))
+hanabi_letters.append(list(' ' + p + ' '*3 + p + ' '*2 + p + ' '*2 + p + ' ' + p + ' ' + p + ' '*2 + p + ' '*2 + p + ' '*2  + p + ' ' + p + ' ' + p + ' '*2 + p + ' '*2 + p + ' '*3))
+hanabi_letters.append(list(' ' + p + ' '*3 + p + ' '*3 + p*2 + ' '*2 + p + ' ' + p + ' '*2 + p + ' '*3 + p*2 + ' '*2 + p + ' ' + p*4 + ' '*2 + p + ' '*3))
+
+def make_splash(width, height):
+	splash = Screen(width, height)
+
+	border_char = '#'
+	hanabi_width = 38
+	hanabi_height = 9
+	for x in range(splash.width):
+		splash.set_char(Coord(x, 0), border_char)
+		splash.set_char(Coord(x, splash.height - 1), border_char)
+	for y in range(splash.height):
+		splash.set_char(Coord(0, y), border_char)
+		splash.set_char(Coord(splash.width - 1, y), border_char)
+
+	#bottom left corner of where letters should start
+	letters_start = Coord((splash.width - hanabi_width) / 2, (splash.height - hanabi_height) / 2)
+	letters_start = letters_start.int_copy()
+
+	for x in range(hanabi_width):
+		for y in range(hanabi_height):
+			# print("x, y = ", x, ", ", y)
+			splash.set_char(Coord(letters_start.x + x, letters_start.y + y), hanabi_letters[hanabi_height - 1 - y][x])
+
+	return splash
+
+
 def wait_sec(s):
 	"""
 	pauses command line for S seconds
@@ -247,3 +347,12 @@ def clear_screen():
 	os.system('cls')
 
 run()
+
+
+# if random.random() < 0.1:
+		# 	position = Coord(round(random.random() * run_screen.width), 0)
+		# 	v0 = random.random()*3+2
+		# 	angle = random.random()*90+45
+		# 	timer = random.random()*30+10
+		# 	firework = Firework(position, v0, angle, timer, '@', 'o')
+		# 	h.add_firework(firework)
