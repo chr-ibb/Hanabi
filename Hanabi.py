@@ -49,15 +49,15 @@ def run():
 	default_rate = 0.1
 	firework_rate = default_rate
 	for frame in range(run_time):
-		# Randomly shoot fireworks, 10% chance every frame. dont shoot if its currently a finale
+		# Randomly shoot fireworks, firework_rate chance every frame
 		if random.random() < firework_rate:
-			position = Coord(round(random.random() * run_screen.width), 0)
+			position = Coord(round(run_screen.width * 0.2 + random.random() * run_screen.width * 0.6), 0)
 			v0 = random.random()*3+2
 			angle = random.random()*90+45
 			timer = random.random()*30+10
 			h.add_firework(Firework(position, v0, angle, timer, '@', 'o'))
 
-		if frame and frame % 200 == 0 and random.random() < 1:
+		if frame and frame % 300 == 0 and random.random() < 0.5:
 			finale = True
 			finale_frame = frame
 			firework_rate = 0
@@ -80,58 +80,6 @@ def run():
 		wait_sec(0.05)
 
 	print('The fireworks are over! See ya ~')
-
-def do_finale(composer):
-	"""
-	make it so it randomly desides what KIND of finale. maybe it just returns 1 and thats it, so the rate goes up to 1 and it goes nuts,
-	maybe it does whats below,
-	maybe it shoots half from each side towards the middle
-	those could be the three for now.
-	"""
-	screen = composer.screen
-
-	choose = random.random()*4
-	choose = 2.5 #REMOVE THIS
-	if choose < 1:
-		position = Coord((screen.width / 4) + random.random()*screen.width/2, 0)
-		timer = random.random()*30+10
-		f_angle = random.random()*90+45
-		number_of_fireworks = round(10 + random.random()*40)
-		for _ in range(number_of_fireworks):
-			v0 = random.random()*3+2
-			angle = f_angle - 45 + random.random()*90
-			composer.add_firework(Firework(position.copy(), v0, angle, timer, '@', 'o'))
-		return 0
-
-	elif choose < 2:
-		number_of_fireworks = round(5 + random.random()*20)
-		timer = random.random()*30+10
-
-		position = Coord(screen.width * 0.15, 0)
-		f_angle = 45
-		for _ in range(number_of_fireworks):
-			v0 = random.random()*3+3
-			angle = f_angle - 25 + random.random()*50
-			composer.add_firework(Firework(position.copy(), v0, angle, timer, '@', 'o'))
-
-		position = Coord(screen.width * 0.85, 0)
-		f_angle = 135
-		for _ in range(number_of_fireworks):
-			v0 = random.random()*3+3
-			angle = f_angle - 25 + random.random()*50
-			composer.add_firework(Firework(position.copy(), v0, angle, timer, '@', 'o'))
-		return 0
-
-	elif choose < 3:
-		position = Coord((screen.width / 4) + random.random()*screen.width/2, 0)
-		timer = random.random()*30+10
-		angle = random.random()*90+45
-		v0 = random.random()*3+2
-		composer.add_firework(Firework(position.copy(), v0, angle, timer, '+', '-', round(timer / 2), 2))
-		return 0
-
-	else:
-		return 1
 
 
 class Composer:
@@ -332,6 +280,58 @@ def make_splash(width, height):
 			splash.set_char(Coord(letters_start.x + x, letters_start.y + y), hanabi_letters[hanabi_height - 1 - y][x])
 
 	return splash
+
+
+def do_finale(composer):
+	"""
+	make it so it randomly desides what KIND of finale. maybe it just returns 1 and thats it, so the rate goes up to 1 and it goes nuts,
+	maybe it does whats below,
+	maybe it shoots half from each side towards the middle
+	those could be the three for now.
+	"""
+	screen = composer.screen
+
+	choose = random.random()*4
+	if choose < 1:
+		position = Coord(screen.width*0.45 + random.random()*screen.width*0.1, 0)
+		timer = random.random()*30+10
+		f_angle = random.random()*60+60
+		number_of_fireworks = round(10 + random.random()*40)
+		for _ in range(number_of_fireworks):
+			v0 = random.random()*3+2
+			angle = f_angle - 45 + random.random()*90
+			composer.add_firework(Firework(position.copy(), v0, angle, timer, '@', 'o'))
+		return 0
+
+	elif choose < 2:
+		number_of_fireworks = round(5 + random.random()*20)
+		timer = random.random()*20+20
+
+		position = Coord(screen.width * 0.15, 0)
+		f_angle = 45
+		for _ in range(number_of_fireworks):
+			v0 = random.random()*3+3
+			angle = f_angle - 25 + random.random()*50
+			composer.add_firework(Firework(position.copy(), v0, angle, timer, '@', 'o'))
+
+		position = Coord(screen.width * 0.85, 0)
+		f_angle = 135
+		for _ in range(number_of_fireworks):
+			v0 = random.random()*3+3
+			angle = f_angle - 25 + random.random()*50
+			composer.add_firework(Firework(position.copy(), v0, angle, timer, '@', 'o'))
+		return 0
+
+	elif choose < 3:
+		position = Coord((screen.width * 0.4) + random.random()*screen.width * 0.2, 0)
+		timer = random.random()*20+20
+		angle = random.random()*90+45
+		v0 = random.random()*1+3
+		composer.add_firework(Firework(position.copy(), v0, angle, timer, '+', '-', round(timer / 2), 2))
+		return 0
+
+	else:
+		return 1	
 
 
 def wait_sec(s):
