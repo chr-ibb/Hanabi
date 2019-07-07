@@ -12,15 +12,16 @@ so itll go in and out of finale mode randomly
 """
 
 def run():
-	size_setter = make_splash(50, 20)
+	size_setter = make_splash(80, 20)
 	# size_setter = make_splash(315, 80)
 	done = False
 	while not done:
 		clear_screen()
 		size_setter.print()
-		print('Use WASD to change size of the rectangle to fit your screen, then press Enter. Bigger is better- try fullscreen!')
-		print('                  (make sure you can still see the top edge of the rectangle)')
-		print('Size: ', size_setter.width, ' x ', size_setter.height)
+		print('Use WASD to change size of the rectangle to fit your screen, then press Enter.')
+		print('Try maximizing the window and setting the font to 12. Size:', size_setter.width, 'x', size_setter.height, ' (aim for 300x70)')
+		print('Make sure you can still see the top edge of the rectangle.')
+		# print('Size: ', size_setter.width, ' x ', size_setter.height, ' (aim for 300 x 70)')
 		user_input = msvcrt.getwch()
 		if user_input == 'w' or user_input == 'W':
 			size_setter = make_splash(size_setter.width, size_setter.height - 5)
@@ -74,8 +75,8 @@ def run():
 		h.write_fireworks()
 		clear_screen()
 		h.print_screen()
-		print("frame: ", frame)
-		print("number of fireworks: ", len(h.fireworks))
+		# print("frame: ", frame)
+		# print("number of fireworks: ", len(h.fireworks))
 		h.update_fireworks()
 		wait_sec(0.05)
 
