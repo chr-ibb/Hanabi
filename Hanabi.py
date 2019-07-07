@@ -12,8 +12,8 @@ so itll go in and out of finale mode randomly
 """
 
 def run():
-	# size_setter = make_splash(50, 20)
-	size_setter = make_splash(315, 80)
+	size_setter = make_splash(50, 20)
+	# size_setter = make_splash(315, 80)
 	done = False
 	while not done:
 		clear_screen()
