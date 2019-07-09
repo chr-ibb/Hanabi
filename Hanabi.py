@@ -73,7 +73,7 @@ def run():
 			firework_rate = 1
 
 		h.write_fireworks()
-		clear_screen()
+		# clear_screen() #OLD PRINTING
 		h.print_screen()
 		# print("frame: ", frame)
 		# print("number of fireworks: ", len(h.fireworks))
@@ -146,12 +146,22 @@ class Screen:
 		assert coord.y >= 0 and coord.y < self.height, "Y Coordinate out of range"
 		return self.content[self.y_max - coord.y][coord.x]
 
+	# def print(self):
+	# 	for row in self.content:
+	# 		line = ''
+	# 		for char in row:
+	# 			line += char
+	# 		print(line)
+
 	def print(self):
+		to_print = ''
 		for row in self.content:
 			line = ''
 			for char in row:
 				line += char
-			print(line)
+			to_print = to_print + line + '\n'
+		clear_screen()
+		print(to_print)
 
 	def in_screen(self, coord):
 		"""
