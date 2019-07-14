@@ -1,84 +1,69 @@
+"""
+Learned:
+printing more than one line at a time (was printing one line at a time at first)
+a bunch of stuff, you came up with the idea to write this here after you finished this all, so you'll have to remember
+
+TODO
+Fill out these lists
+manual finale functionality
+make it run better (it lags when my laptop isn't plugged in, or when too many fireworks.)
+maybe different kind of fireworks
+maybe make it so by default it just runs, but you can always add in whatever kind of fireworks you want or start finales
+	so you could be the composer
+
+"""
+
+
 import time
 import os
 import random
 import math
 import msvcrt
 
-"""
-I'll find a nice rate of fireworks for non-finale time
-and after X updates it rolls to see if it goes into another non-finale stretch or into a finale
-and repeat
-so itll go in and out of finale mode randomly
-"""
 
 def run():
-	size_setter = make_splash(80, 20)
-	# size_setter = make_splash(315, 80)
-	done = False
-	while not done:
-		clear_screen()
-		size_setter.print()
-		print('Use WASD to change size of the rectangle to fit your screen, then press Enter.')
-		print('Try maximizing the window and setting the font to 12. Size:', size_setter.width, 'x', size_setter.height, ' (aim for 300x70)')
-		print('Make sure you can still see the top edge of the rectangle.')
-		# print('Size: ', size_setter.width, ' x ', size_setter.height, ' (aim for 300 x 70)')
-		user_input = msvcrt.getwch()
-		if user_input == 'w' or user_input == 'W':
-			size_setter = make_splash(size_setter.width, size_setter.height - 5)
-						
-		if user_input == 'a' or user_input == 'A':
-			size_setter = make_splash(size_setter.width - 5, size_setter.height)
-
-		if user_input == 's' or user_input == 'S':
-			size_setter = make_splash(size_setter.width, size_setter.height + 5)
-			
-		if user_input == 'd' or user_input == 'D':
-			size_setter = make_splash(size_setter.width + 5, size_setter.height)
-			
-		if user_input == '\r' or user_input == 'e' or input == 'E':
-			done = True
-
-
-	run_screen = Screen(size_setter.width, size_setter.height)
-	h = Composer(run_screen)
+	"""
+	Runs the fireworks. First it has the user set up the size of the screen, then it makes fireworks for as long as the user asked
+	"""
+	screen_size = setup_screen() # Show the splash screen, and use it to set the size of the screen for fireworks
+	run_screen = Screen(screen_size[0], screen_size[1]) # initialize the screen that will be used to show the fireworks on
+	h = Composer(run_screen) # initialize the composer that will store all the fireworks
 
 	run_time = input('How many minutes?  Minutes: ')
-	run_time = round(float(run_time) * 60 * 20)
+	run_time = round(float(run_time) * 60 * 20) # set how long to run the fireworks for. Not accurate, actually represents how long the console is paused for
 
-	finale = False
-	finale_frame = 0
-	default_rate = 0.1
+	finale = False # is there currently a finale happening?
+	finale_frame = 0 # used to  know when the last finale started, for clearing the screen of fireworks before, and timing the launch
+	default_rate = 0.1 # Default rate of fireworks, basically the chance a firework will be created every 0.05 seconds
 	firework_rate = default_rate
-	for frame in range(run_time):
-		# Randomly shoot fireworks, firework_rate chance every frame
-		if random.random() < firework_rate:
+	for frame in range(run_time): # Main loop
+		if random.random() < firework_rate: # firework_rate chance to add a randomized firework to the composer
 			position = Coord(round(run_screen.width * 0.2 + random.random() * run_screen.width * 0.6), 0)
 			v0 = random.random()*3+2
 			angle = random.random()*90+45
 			timer = random.random()*30+10
 			h.add_firework(Firework(position, v0, angle, timer, '@', 'o'))
 
-		if frame and frame % 300 == 0 and random.random() < 0.5:
+		if frame and frame % 300 == 0 and random.random() < 0.5: # checks to see if it should start a finale
 			finale = True
 			finale_frame = frame
 			firework_rate = 0
-		if finale and frame == finale_frame + 50:
+		if finale and frame == finale_frame + 50: # waits for 50 frames to actually start the finale, so the screen will be clear by then
 			firework_rate = do_finale(h)
-		if frame == finale_frame + 100:
+		if frame == finale_frame + 100: # resets FINALE and  FIREWORK_RATE now that the finale is finished
 			finale = False
 			firework_rate = default_rate
 
-
-		if frame > run_time - 400:
+		if frame > run_time - 400: # last 400 frames will have a lot of fireworks
 			firework_rate = 1
 
-		h.write_fireworks()
-		# clear_screen() #OLD PRINTING
-		h.print_screen()
+		h.write_fireworks() # write all the fireworks to the screen
+		# clear_screen() # OLD PRINTING
+		h.print_screen() # print the screen
 		# print("frame: ", frame)
 		# print("number of fireworks: ", len(h.fireworks))
-		h.update_fireworks()
-		wait_sec(0.05)
+		h.update_fireworks() # update all the fireworks, using basic physics
+		wait_sec(0.05) # wait between every loop. not as updating X times per second, but it's close enough
 
 	print('The fireworks are over! See ya ~')
 
@@ -146,7 +131,7 @@ class Screen:
 		assert coord.y >= 0 and coord.y < self.height, "Y Coordinate out of range"
 		return self.content[self.y_max - coord.y][coord.x]
 
-	# def print(self):
+	# def print(self): # OLD PRINT METHOD that printed one line at a time. new one prints out the whole screen at once
 	# 	for row in self.content:
 	# 		line = ''
 	# 		for char in row:
@@ -172,14 +157,7 @@ class Screen:
 
 class Firework:
 	"""
-	can have 3 different kind of fireworks
-	a standard that only recursively calls once
-	a double that calls twice
-	and a rando, where everything is random. can go nuts with this one. like maybe even only some of the offspring will have offspring, etc, and lengths can be rando
-
-	MAYBE make it so when the time runs out it doesn't remove itself yet, instead it stops updating position but keeps
-	making things dead, and then after that it removes itself. so there's a lag. for now skip this.
-	you can just compare FADE to TIME to see what you should fade, and then write that, etc.
+	
 	"""
 	grav = -0.1
 
@@ -254,7 +232,7 @@ class Coord:
 		return '(' + str(self.x) + ', ' + str(self.y) +')'
 
 
-# To spell out Hanabi:
+# To spell out Hanabi in large letters:
 title_char = '#'
 p = title_char
 hanabi_letters = []
@@ -268,7 +246,8 @@ hanabi_letters.append(list(' ' + p + ' '*3 + p + ' '*2 + p + ' '*3 + p + ' '*3 +
 hanabi_letters.append(list(' ' + p + ' '*3 + p + ' '*2 + p + ' '*2 + p + ' ' + p + ' ' + p + ' '*2 + p + ' '*2 + p + ' '*2  + p + ' ' + p + ' ' + p + ' '*2 + p + ' '*2 + p + ' '*3))
 hanabi_letters.append(list(' ' + p + ' '*3 + p + ' '*3 + p*2 + ' '*2 + p + ' ' + p + ' '*2 + p + ' '*3 + p*2 + ' '*2 + p + ' ' + p*4 + ' '*2 + p + ' '*3))
 
-def make_splash(width, height):
+
+def make_splash(width, height): # makes a splash screen with WIDTH and HEIGHT dimensions. says Hanabi in the center of the screen
 	splash = Screen(width, height)
 
 	border_char = '#'
@@ -293,16 +272,50 @@ def make_splash(width, height):
 	return splash
 
 
-def do_finale(composer):
+def setup_screen(): # Setup the size of the screen that will show the fireworks
+	size_setter = make_splash(80, 20) # Makes a splash screen of sorts, which is used to set the screen size
+	# size_setter = make_splash(315, 80) # this is the size that fits the monitor I was using to write the code, actually a television
+	done = False
+	while not done: # loop until they finish setting the screen size
+		clear_screen()
+		size_setter.print()
+		print('Use WASD to change size of the rectangle to fit your screen, then press Enter.')
+		print('Try maximizing the window and setting the font to 12. Size:', size_setter.width, 'x', size_setter.height, ' (aim for 300x70)')
+		print('Make sure you can still see the top edge of the rectangle.')
+		# print('Size: ', size_setter.width, ' x ', size_setter.height, ' (aim for 300 x 70)')
+		user_input = msvcrt.getwch()
+		if user_input == 'w' or user_input == 'W':
+			size_setter = make_splash(size_setter.width, size_setter.height - 5)
+						
+		if user_input == 'a' or user_input == 'A':
+			size_setter = make_splash(size_setter.width - 5, size_setter.height)
+
+		if user_input == 's' or user_input == 'S':
+			size_setter = make_splash(size_setter.width, size_setter.height + 5)
+			
+		if user_input == 'd' or user_input == 'D':
+			size_setter = make_splash(size_setter.width + 5, size_setter.height)
+			
+		if user_input == '\r' or user_input == 'e' or input == 'E':
+			done = True
+	return size_setter.width, size_setter.height
+
+
+def do_finale(composer, choose = random.random()*4):
 	"""
-	make it so it randomly desides what KIND of finale. maybe it just returns 1 and thats it, so the rate goes up to 1 and it goes nuts,
-	maybe it does whats below,
-	maybe it shoots half from each side towards the middle
-	those could be the three for now.
+	Does a finale, by adding a bunch of fireworks to the COMPOSER, or just changing the firework_rate to 1
+	Currently there are 4 finales. By default, one of them is randomly picked
+	finale 1 (CHOOSE between 0 and 1):
+		shoots between 10 and 50 fireworks from one point in the center, bottom of the screen, all srpead out but in the same general direction
+	finale 2 (CHOOSE between 1 and 2):
+		shoots between 5 and 25 fireworks from each side,bottom of the screen, towards the center
+	finale 3 (CHOOSE between 2 and 3):
+		shoots one special firework with different ASCII characters, which splits into a bunch of fireworks when it pops, which all split again
+	finale 4 (Choose between 3 and 4):
+		makes the firework_rate 1, meaning a firework spawns every frame for the duration of the finale
 	"""
 	screen = composer.screen
 
-	choose = random.random()*4
 	if choose < 1:
 		position = Coord(screen.width*0.45 + random.random()*screen.width*0.1, 0)
 		timer = random.random()*30+10
@@ -358,12 +371,3 @@ def clear_screen():
 	os.system('cls')
 
 run()
-
-
-# if random.random() < 0.1:
-		# 	position = Coord(round(random.random() * run_screen.width), 0)
-		# 	v0 = random.random()*3+2
-		# 	angle = random.random()*90+45
-		# 	timer = random.random()*30+10
-		# 	firework = Firework(position, v0, angle, timer, '@', 'o')
-		# 	h.add_firework(firework)
