@@ -49,7 +49,7 @@ def run():
 			finale_frame = frame
 			firework_rate = 0
 		if finale and frame == finale_frame + 50: # waits for 50 frames to actually start the finale, so the screen will be clear by then
-			firework_rate = do_finale(h)
+			firework_rate = do_finale(h, random.random()*4)
 		if frame == finale_frame + 100: # resets FINALE and  FIREWORK_RATE now that the finale is finished
 			finale = False
 			firework_rate = default_rate
@@ -301,7 +301,7 @@ def setup_screen(): # Setup the size of the screen that will show the fireworks
 	return size_setter.width, size_setter.height
 
 
-def do_finale(composer, choose = random.random()*4):
+def do_finale(composer, choose):
 	"""
 	Does a finale, by adding a bunch of fireworks to the COMPOSER, or just changing the firework_rate to 1
 	Currently there are 4 finales. By default, one of them is randomly picked
@@ -350,7 +350,7 @@ def do_finale(composer, choose = random.random()*4):
 		position = Coord((screen.width * 0.4) + random.random()*screen.width * 0.2, 0)
 		timer = random.random()*20+20
 		angle = random.random()*90+45
-		v0 = random.random()*1+3
+		v0 = random.random()*2+2
 		composer.add_firework(Firework(position.copy(), v0, angle, timer, '+', '-', round(timer / 2), 2))
 		return 0
 
